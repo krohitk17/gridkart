@@ -1,0 +1,5 @@
+.env
+blockchain/bin/
+.vscode
+node_modules
+accounts.txt
