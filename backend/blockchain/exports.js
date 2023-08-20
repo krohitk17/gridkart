@@ -1,4 +1,4 @@
-import { fs } from "fs";
+const fs = require("fs");
 
 const TokenContract = JSON.parse(
   fs.readFileSync(__dirname + "/bin/TokenContract.json", "utf8")

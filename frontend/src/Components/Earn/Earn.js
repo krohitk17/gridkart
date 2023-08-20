@@ -1,57 +1,55 @@
-import React from "react";
-const methodStyle =
-  "bg-gray-100 rounded-lg h-30 w-full p-4 hover:bg-gray-300 mb-2 font-semibold";
-// coin image
+import { useEffect, useContext, useState } from "react";
+import UserContext from "../../Context/context";
+import { completeEvent, getUser } from "../../Routes/user";
+import { getAvailableTasks } from "../../Routes/event";
+import Task from "./Task";
+
+const defaultTasks = [
+  {
+    id: "64e26d6a5073d22e6d319be8",
+    href: "https://www.facebook.com/flipkart",
+  },
+  {
+    id: "64e26d5c5073d22e6d319be4",
+    href: "https://www.instagram.com/flipkart/?hl=en",
+  },
+  {
+    id: "64e26d645073d22e6d319be6",
+    href: "https://twitter.com/flipkart?lang=en",
+  },
+];
 
 function Earn() {
+  const { user } = useContext(UserContext);
+  const [userData, setUser] = useState(null);
+  const [tasks, setTask] = useState([]);
+
+  function onClick(target) {
+    console.log(target);
+    if (defaultTasks.some((task) => task.id === target._id)) {
+      window.open(defaultTasks.find((task) => task.id === target._id).href);
+      completeEvent(user, target._id).then(() => {
+        tasks.remove((task) => task.id === target._id);
+      });
+    }
+  }
+
+  function getUserData() {
+    getUser(user).then((data) => {
+      setUser(data);
+    });
+  }
+
+  useEffect(() => {
+    getUserData();
+    getAvailableTasks(user).then((data) => {
+      setTask(data);
+    });
+  }, []);
+
   return (
     <>
       <div className="bg-white shadow-lg p-4 min-w-[55em]">
-        <div className="pt-2 flex-row">
-          <div>
-            <button className={methodStyle}>
-              <a
-                href="https://www.instagram.com/flipkart/?hl=en"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <div className="flex">
-                  <div>Follow FlipKart on Instagram</div>
-                  <div className="ml-auto">+10</div>
-                </div>
-              </a>
-            </button>
-          </div>
-          <div>
-            <button className={methodStyle}>
-              <a
-                href="https://www.instagram.com/flipkart/?hl=en"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <div className="flex">
-                  <div>Follow FlipKart on X</div>
-                  <div className="ml-auto">+10</div>
-                </div>
-              </a>
-            </button>
-          </div>
-          <div>
-            <button className={methodStyle}>
-              <a
-                href="https://www.instagram.com/flipkart/?hl=en"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <div className="flex">
-                  <div>Follow FlipKart on Facebook</div>
-                  <div className="ml-auto">+10</div>
-                </div>
-              </a>
-            </button>
-          </div>
-        </div>
-
         <div className="font-bold text-lg py-2">Referral</div>
         <div className="bg-gray-100 rounded-lg h-30 w-full p-4 mb-2 font-semibold">
           <p className="pb-4 text-lg">Invite friends and get SuperTokens!</p>
@@ -80,7 +78,9 @@ function Earn() {
                 ></img>
               </div>
               <div className="pl-2">
-                <p className="text-lg font-bold ">100 SuperTokens</p>
+                <p className="text-lg font-bold ">
+                  {userData ? userData.totalRewards : "Loading..."} SuperTokens
+                </p>
                 <p className="text-sm font-normal">You've earned till now</p>
               </div>
             </div>
@@ -102,6 +102,19 @@ function Earn() {
               </div>
             </div>
           </div>
+        </div>
+        <div className="pt-2 flex-row">
+          {tasks.map((task) => {
+            console.log(task);
+            return (
+              <Task
+                key={task._id}
+                description={task.description}
+                amount={task.amount}
+                onClick={() => onClick(task)}
+              />
+            );
+          })}
         </div>
       </div>
     </>

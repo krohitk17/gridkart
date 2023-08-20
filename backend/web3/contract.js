@@ -25,11 +25,58 @@ const tokenContract = new web3.eth.Contract(
 );
 
 async function getAllTransactions() {
+  const block = await web3.eth.getBlockNumber();
+  console.log(block);
   const events = await companyContract.getPastEvents("Transaction", {
-    fromBlock: 0,
-    toBlock: "latest",
+    fromBlock: Number(block) - 10000,
+    toBlock: block,
   });
-  return events;
+
+  return Promise.all(
+    events
+      .map(async (event) => {
+        const neg =
+          event.returnValues.sender === companyContractAddress ? -1 : 1;
+        const eventBlock = await web3.eth.getBlock(event.blockNumber);
+        return {
+          hash: event.transactionHash,
+          sender: event.returnValues.sender,
+          receiver: event.returnValues.receiver,
+          amount: Number(event.returnValues.amount) * neg,
+          timestamp: Number(eventBlock.timestamp),
+        };
+      })
+      .sort((a, b) => a.timestamp - b.timestamp)
+  );
+}
+
+async function getContractBalance() {
+  const result = await tokenContract.methods
+    .balanceOf(companyContractAddress)
+    .call({ from: owner.address });
+  return Number(result);
+}
+
+async function approve(userAddress, amount, privateKey) {
+  const txData = tokenContract.methods
+    .approve(companyContractAddress, amount)
+    .encodeABI();
+
+  const nonce = await web3.eth.getTransactionCount(userAddress);
+  const gasPrice = await web3.eth.getGasPrice();
+
+  const tx = {
+    from: userAddress,
+    to: tokenContractAddress,
+    nonce: nonce,
+    gas: 300000,
+    gasPrice: gasPrice,
+    data: txData,
+  };
+
+  const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+
+  const result = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
 }
 
 async function sendTransaction(txData) {
@@ -68,4 +115,6 @@ module.exports = {
   owner,
   getAllTransactions,
   sendTransaction,
+  getContractBalance,
+  approve,
 };

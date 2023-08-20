@@ -15,13 +15,28 @@ async function completeTask(user, tId) {
   await sendTransaction(txData);
 }
 
-async function getTaskTransactions(tId) {
-  const events = await companyContract.getPastEvents("Transaction", {
-    filter: { tId: tId },
-    fromBlock: 0,
-    toBlock: "latest",
+async function getTaskTransactions(tId, limit) {
+  let block = await web3.eth.getBlockNumber();
+  block = Number(block);
+  const events = await companyContract.getPastEvents("TaskTransaction", {
+    filter: { tId },
+    fromBlock: block - limit,
+    toBlock: block,
   });
-  return events;
+
+  return Promise.all(
+    events
+      .map(async (event) => {
+        const eventBlock = await web3.eth.getBlock(event.blockNumber);
+        return {
+          sender: event.returnValues.sender,
+          receiver: event.returnValues.receiver,
+          amount: event.returnValues.amount,
+          timestamp: eventBlock.timestamp,
+        };
+      })
+      .sort((a, b) => b.timestamp - a.timestamp)
+  );
 }
 
 module.exports = {

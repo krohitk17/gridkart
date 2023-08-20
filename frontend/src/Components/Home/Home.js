@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
-import { useContext, useState } from "react";
+import React from "react";
+import { useContext } from "react";
 import Chart from "../Chart";
 import { Progress } from "@chakra-ui/react";
 import UserContext from "../../Context/context";
-import { getUserBalance } from "../../web3/user";
 
 const ruleStyle = "bg-gray-100 rounded-lg h-40 w-40 p-4";
 const ruleStyle2 = "bg-gray-100 rounded-lg h-40 w-40 p-4 text-center";
@@ -11,16 +10,7 @@ const numberStyle =
   "font-bold text-blue-500 rounded-full border-2 border-blue-500 h-6 w-6 flex items-center justify-center mb-2";
 
 function Home() {
-  const { globalVariable, user } = useContext(UserContext);
-  const { balance, setBalance } = useState();
-
-  useEffect(() => {
-    (async () => {
-      const result = await getUserBalance(user);
-      setBalance(result);
-      console.log(result);
-    })();
-  });
+  const { globalVariable, balance } = useContext(UserContext);
 
   if (globalVariable === "user") {
     return (
@@ -29,9 +19,8 @@ function Home() {
           <div className="flex">
             <div>
               <div className="font-bold text-lg">
-                SuperToken Balance : {balance}
+                SuperToken Balance : {balance === 0 ? "Loading..." : balance}
               </div>
-              <div className="text-sm">Valid until: 22-12-2002</div>
             </div>
             <div className="flex font-bold text-[#F7E200] ml-auto items-center">
               <div className="bg-[#2874f0] p-2 ">Gold Member</div>
@@ -87,7 +76,7 @@ function Home() {
           <div className="flex">
             <div>
               <div className="font-bold text-lg pb-2">
-                SuperToken Balance : 10000
+                SuperToken Balance : {balance === 0 ? "Loading..." : balance}
               </div>
             </div>
           </div>

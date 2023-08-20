@@ -41,10 +41,8 @@ async function stakeTokens(user, amount) {
   await sendTransaction(txData);
 }
 
-async function unstakeTokens(user, amount) {
-  const txData = companyContract.methods
-    .unstakeTokens(user, amount)
-    .encodeABI();
+async function unstakeTokens(user) {
+  const txData = companyContract.methods.unstakeTokens(user).encodeABI();
   await sendTransaction(txData);
 }
 
@@ -55,13 +53,40 @@ async function calculateStake(userAddress) {
   return result;
 }
 
-async function getUserTransactions(userAddress) {
-  const events = await companyContract.getPastEvents("Transaction", {
-    filter: { sender: userAddress, receiver: userAddress },
-    fromBlock: 0,
-    toBlock: "latest",
+async function getUserTransactions(userAddress, limit) {
+  let block = await web3.eth.getBlockNumber();
+  block = Number(block);
+  const senderEvents = await companyContract.getPastEvents("Transaction", {
+    filter: { receiver: userAddress },
+    fromBlock: block - 10000,
+    toBlock: block,
+    limit: limit,
   });
-  return events;
+  const receiverEvents = await companyContract.getPastEvents("Transaction", {
+    filter: { sender: userAddress },
+    fromBlock: block - 10000,
+    toBlock: block,
+    limit: limit,
+  });
+
+  const events = [...senderEvents, ...receiverEvents];
+
+  return Promise.all(
+    events
+      .map(async (event) => {
+        const neg = event.returnValues.sender === userAddress ? -1 : 1;
+        console.log(event.returnValues.sender, userAddress, neg);
+        const eventBlock = await web3.eth.getBlock(event.blockNumber);
+        return {
+          hash: event.transactionHash,
+          sender: event.returnValues.sender,
+          receiver: event.returnValues.receiver,
+          amount: Number(event.returnValues.amount) * neg,
+          timestamp: Number(eventBlock.timestamp),
+        };
+      })
+      .sort((a, b) => a.timestamp - b.timestamp)
+  );
 }
 
 module.exports = {

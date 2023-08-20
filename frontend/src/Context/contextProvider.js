@@ -1,15 +1,36 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import UserContext from "./context";
+
+import { getUserBalance, getContractBalance } from "../Routes/user";
 
 const UserContextProvider = ({ children }) => {
   const [globalVariable, setGlobalVariable] = useState("user");
-  const [user, setUser] = useState(
-    "0xFA370fE5fFfCfcEc3db78587db7E62944AD883dE"
-  );
+  const [user, setUser] = useState("64e244f56b0c0a7bb062fe90");
+  const [balance, setBalance] = useState(0);
+
+  useEffect(() => {
+    console.log(user);
+    if (globalVariable === "user") {
+      getUserBalance(user).then((balance) => {
+        setBalance(balance);
+      });
+    } else {
+      getContractBalance().then((balance) => {
+        setBalance(balance);
+      });
+    }
+  }, []);
 
   return (
     <UserContext.Provider
-      value={{ globalVariable, setGlobalVariable, user, setUser }}
+      value={{
+        globalVariable,
+        setGlobalVariable,
+        user,
+        setUser,
+        balance,
+        setBalance,
+      }}
     >
       {children}
     </UserContext.Provider>

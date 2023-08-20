@@ -1,15 +1,22 @@
 const Event = require("../models/event");
 
-const { createEvent } = require("../web3/rewards.js");
+const { createReward } = require("../web3/rewards.js");
+const { createTask } = require("../web3/tasks.js");
 
-async function create(type, description, amount) {
+async function create(type, description, amount, image) {
   const event = new Event({
     type,
     description,
     amount,
+    image,
   });
   await event.save();
-  await createEvent(event._id, amount);
+  if (type === "reward") {
+    await createReward(String(event._id), amount);
+  } else {
+    await createTask(String(event._id), amount);
+  }
+
   return event;
 }
 
@@ -24,8 +31,8 @@ async function get(id) {
   return Event.findById(id);
 }
 
-async function getAll() {
-  return Event.find();
+async function getAll(type) {
+  return Event.find({ type: type });
 }
 
 module.exports = {

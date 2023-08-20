@@ -15,13 +15,13 @@ import {
   Input,
   useDisclosure,
 } from "@chakra-ui/react";
-import UserContext from "../../src/Context/context";
-import { createReward, getAvailableRewards, getRewards } from "../Routes/event";
+import { createReward, getRewards } from "../Routes/event";
+import Task from "../Components/Earn/Task";
 
 const addRewardButtonStyle =
   "ml-auto font-semibold bg-gray-300 p-2 rounded-lg hover:scale-110 transition duration-500 ease-in-out transform hover:cursor-pointer";
 
-function Rewards() {
+function Tasks() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const initialRef = React.useRef(null);
   const finalRef = React.useRef(null);
@@ -110,11 +110,13 @@ function Rewards() {
         <div className="pt-2 flex flex-wrap justify-evenly ">
           {/* image of product */}
           {rewards.map((reward) => (
-            <RedeemItem
+            <Task
               key={reward._id}
-              name={reward.description}
-              cost={reward.amount}
-              img={reward.image}
+              description={reward.description}
+              amount={reward.amount}
+              onClick={() => {
+                console.log("clicked");
+              }}
             />
           ))}
         </div>
@@ -123,4 +125,4 @@ function Rewards() {
   );
 }
 
-export default Rewards;
+export default Tasks;
