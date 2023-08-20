@@ -10,33 +10,6 @@ contract CompanyContract {
     // address of TokenContract contract
     TokenContract private token;
 
-    // count number of transactions, also used as transaction ID
-    uint transactionNonce = 0;
-
-    // event to store token transactions amoung users
-    event Transaction(
-        uint indexed transactId,
-        address sender,
-        address receiver,
-        uint amount
-    );
-
-    // event which checks when a reward is redeemed
-    event RewardTransaction(
-        uint indexed transactId,
-        uint indexed rId,
-        address indexed userAddress,
-        uint amount
-    );
-
-    // event which checks when a task is completed
-    event TaskTransaction(
-        uint indexed transactId,
-        uint indexed tId,
-        address indexed userAddress,
-        uint amount
-    );
-
     // Structure to store offers and rewards
     struct Event {
         // stores the amount of event
@@ -55,20 +28,47 @@ contract CompanyContract {
     mapping(address => bool) private users;
 
     // mapping which stores tasks mapped to a task id
-    mapping(uint => Event) public tasks;
+    mapping(string => Event) public tasks;
 
     // mapping which stores rewards mapped to a reward id
-    mapping(uint => Event) public rewards;
+    mapping(string => Event) public rewards;
 
     // mapping which stores staked token data mapped to an account address
     mapping(address => Stake) private stakes;
 
     // mapping used to store completed tasks for each user
     // user address is mapped to another mapping which maps a boolean value to a task id
-    mapping(address => mapping(uint => bool)) private taskTransactions;
+    mapping(address => mapping(string => bool)) private taskTransactions;
 
     // mapping used to store redeemed rewards for each user
-    mapping(address => mapping(uint => bool)) private rewardTransactions;
+    mapping(address => mapping(string => bool)) private rewardTransactions;
+
+    // count number of transactions, also used as transaction ID
+    uint transactionNonce = 0;
+
+    // event to store token transactions amoung users
+    event Transaction(
+        uint indexed transactId,
+        address sender,
+        address receiver,
+        uint amount
+    );
+
+    // event which checks when a reward is redeemed
+    event RewardTransaction(
+        uint indexed transactId,
+        string indexed rId,
+        address indexed userAddress,
+        uint amount
+    );
+
+    // event which checks when a task is completed
+    event TaskTransaction(
+        uint indexed transactId,
+        string indexed tId,
+        address indexed userAddress,
+        uint amount
+    );
 
     // modifier which only allows contract owner
     modifier onlyOwner() {
@@ -83,13 +83,13 @@ contract CompanyContract {
     }
 
     // modifier which only allows a single event type
-    modifier onlyReward(uint rId) {
+    modifier onlyReward(string memory rId) {
         require(rewards[rId].amount != 0, "Reward does not exist");
         _;
     }
 
     // modifier which only allows a single event type
-    modifier onlyTask(uint tId) {
+    modifier onlyTask(string memory tId) {
         require(tasks[tId].amount != 0, "Task does not exist");
         _;
     }
@@ -157,7 +157,7 @@ contract CompanyContract {
 
     // function to create an event
     function createTask(
-        uint tId,
+        string memory tId,
         uint amount
     ) external onlyOwner checkZero(amount) {
         // check that task does not exist
@@ -167,29 +167,32 @@ contract CompanyContract {
     }
 
     // function to remove an event
-    function removeTask(uint tId) external onlyOwner onlyTask(tId) {
+    function removeTask(string memory tId) external onlyOwner onlyTask(tId) {
         // remove the event from events mapping by setting all values to default
         tasks[tId] = Event(0);
     }
 
     // function to mark a task as completed
-    function completeTask(uint tId) external onlyTask(tId) isUser(msg.sender) {
+    function completeTask(
+        address userAddress,
+        string memory tId
+    ) external onlyOwner onlyTask(tId) isUser(userAddress) {
         // check that user has not already completed the task
         require(
-            taskTransactions[msg.sender][tId] == false,
+            taskTransactions[userAddress][tId] == false,
             "Already completed event"
         );
         // transfer the task amount tokens to user address
-        token.transfer(msg.sender, tasks[tId].amount);
+        token.transfer(userAddress, tasks[tId].amount);
         // mark the task as completed
-        taskTransactions[msg.sender][tId] = true;
+        taskTransactions[userAddress][tId] = true;
         // emit a transaction event
-        emitTransaction(address(this), msg.sender, tasks[tId].amount);
+        emitTransaction(address(this), userAddress, tasks[tId].amount);
         // emit a task event
         emit TaskTransaction(
             transactionNonce,
             tId,
-            msg.sender,
+            userAddress,
             tasks[tId].amount
         );
         transactionNonce += 1;
@@ -197,7 +200,7 @@ contract CompanyContract {
 
     // function to create a reward
     function createReward(
-        uint rId,
+        string memory rId,
         uint amount
     ) external onlyOwner checkZero(amount) {
         // check that reward does not exist
@@ -207,33 +210,36 @@ contract CompanyContract {
     }
 
     // function to remove a reward
-    function removeReward(uint rId) external onlyOwner onlyReward(rId) {
+    function removeReward(
+        string memory rId
+    ) external onlyOwner onlyReward(rId) {
         // remove the reward from rewards mapping by setting all values to default
         rewards[rId] = Event(0);
     }
 
     // function to redeem a reward
     function redeemReward(
-        uint rId
-    ) external isUser(msg.sender) onlyReward(rId) {
+        address userAddress,
+        string memory rId
+    ) external onlyOwner isUser(userAddress) onlyReward(rId) {
         // check that the user has not already redeemed the reward
         require(
-            rewardTransactions[msg.sender][rId] == false,
+            rewardTransactions[userAddress][rId] == false,
             "Already redeemed reward"
         );
         // get the reward from events mappping
         Event memory reward = rewards[rId];
         // transfers tokens from customer address to contract address
-        token.transferFrom(msg.sender, address(this), reward.amount);
+        token.transferFrom(userAddress, address(this), reward.amount);
         // marks the reward as redeemed by the customer
-        rewardTransactions[msg.sender][rId] = true;
+        rewardTransactions[userAddress][rId] = true;
         // emit a transaction event
-        emitTransaction(msg.sender, address(this), reward.amount);
+        emitTransaction(userAddress, address(this), reward.amount);
         // emit a reward event
         emit RewardTransaction(
             transactionNonce,
             rId,
-            msg.sender,
+            userAddress,
             reward.amount
         );
         // increase transaction count
@@ -242,47 +248,38 @@ contract CompanyContract {
 
     // function to stake tokens
     function stakeTokens(
+        address userAddress,
         uint amount
-    ) external isUser(msg.sender) checkZero(amount) {
+    ) external onlyOwner isUser(userAddress) checkZero(amount) {
         // check that user has not already staked tokens
         require(
-            stakes[msg.sender].amount == 0,
+            stakes[userAddress].amount == 0,
             "User has already staked tokens"
         );
         // add stake token data mapping in stakes mapping
-        stakes[msg.sender] = Stake(amount, block.timestamp);
+        stakes[userAddress] = Stake(amount, block.timestamp);
         // transfer tokens from user address to contract address
-        token.transferFrom(msg.sender, address(this), amount);
+        token.transferFrom(userAddress, address(this), amount);
         // emit a transcation event
-        emitTransaction(msg.sender, address(this), amount);
-    }
-
-    // function to calculate tokens earned relative to amount of staked tokens
-    function calculateStake() public view isUser(msg.sender) returns (uint) {
-        // check that user has staked tokens
-        require(stakes[msg.sender].amount != 0, "User has no staked tokens");
-        // get stake token data of user address from stakes mapping
-        Stake memory stake = stakes[msg.sender];
-        // calculate profit
-        // for every 100 tokens user gets one token every day
-        uint profit = stake.amount +
-            (stake.amount / 100) *
-            ((block.timestamp - stake.timestamp) / 1 days);
-        // return the calculated profit
-        return profit;
+        emitTransaction(userAddress, address(this), amount);
     }
 
     // function to unstake tokens
-    function unstakeTokens() external isUser(msg.sender) {
+    function unstakeTokens(
+        address userAddress
+    ) external onlyOwner isUser(userAddress) {
         // check that user has staked tokens
-        require(stakes[msg.sender].amount != 0, "User has no staked tokens");
-        // get the profit
-        uint amount = calculateStake();
+        require(stakes[userAddress].amount != 0, "User has no staked tokens");
+        Stake memory stake = stakes[userAddress];
+        // for every 100 tokens user gets one token every day
+        uint amount = stake.amount +
+            (stake.amount / 100) *
+            ((block.timestamp - stake.timestamp) / 1 days);
         // transfer tokens to user account
-        token.transfer(msg.sender, amount);
+        token.transfer(userAddress, amount);
         // emit a transaction event
-        emitTransaction(address(this), msg.sender, amount);
+        emitTransaction(address(this), userAddress, amount);
         // remove user stake token data from stakes mapping by setting all values to default
-        stakes[msg.sender] = Stake(0, 0);
+        stakes[userAddress] = Stake(0, 0);
     }
 }

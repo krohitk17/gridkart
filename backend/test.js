@@ -1,6 +1,19 @@
-const { Web3 } = require("web3");
-const web3 = new Web3(
-  "https://light-restless-haze.matic-testnet.discover.quiknode.pro/8542f6c2096998b9a7150f3dbbef64fbb70338e6/"
-);
-web3.eth.getBlock("latest").then((answer) => console.log(answer));
-web3.eth.getBlockNumber().then((blockNum) => console.log(blockNum));
+const mongoose = require("mongoose");
+
+const { create } = require("./controllers/user.js");
+const { getUserBalance, fundUser } = require("./web3/user.js");
+const { createTask, completeTask } = require("./web3/tasks.js");
+const { createReward } = require("./web3/rewards.js");
+
+async function main() {
+  await mongoose.connect(process.env.MONGO_DB_URL);
+
+  const userAddress = "0xFA370fE5fFfCfcEc3db78587db7E62944AD883dE";
+
+  await createTask("1001", 10);
+
+  const balance = await getUserBalance(userAddress);
+  console.log(balance);
+}
+
+main();
