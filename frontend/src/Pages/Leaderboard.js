@@ -58,14 +58,13 @@ function Leaderboard() {
           </div>
         </div>
         <div className="pt-[4em]">
-          <LeaderboardItem position="4" name="John Doe" token="2000" />
-          {/* generate random names */}
-          <LeaderboardItem position="5" name="Jane Doe" token="1500" />
-          <LeaderboardItem position="6" name="John Smith" token="1000" />
-          <LeaderboardItem position="7" name="Jane Smith" token="500" />
-          <LeaderboardItem position="8" name="John Doe" token="250" />
-          <LeaderboardItem position="9" name="Jane Doe" token="100" />
-          <LeaderboardItem position="10" name="John Smith" token="50" />
+          <LeaderboardItem position="4" name="Matthew Robinson" token="2000" />
+          <LeaderboardItem position="5" name="Emily Johnson" token="1500" />
+          <LeaderboardItem position="6" name="Sarah Martinez" token="1000" />
+          <LeaderboardItem position="7" name="Christopher Davis" token="500" />
+          <LeaderboardItem position="8" name="Jessica Anderson" token="250" />
+          <LeaderboardItem position="9" name="Daniel Thompson" token="100" />
+          <LeaderboardItem position="10" name="Olivia Garcia" token="50" />
         </div>
       </div>
     </>

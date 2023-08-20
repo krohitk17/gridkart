@@ -11,6 +11,7 @@ import MyContext from "./Context/context";
 import Rewards from "./Pages/Rewards";
 import Leaderboard from "./Pages/Leaderboard";
 import Stake from "./Pages/Stake";
+import Login from "./Pages/Login";
 
 const router1 = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router1 = createBrowserRouter([
     element: <Root />,
     errorElement: <div>404</div>,
     children: [
+      {
+        path: "/login",
+        element: <Login />,
+      },
       {
         path: "/",
         element: <Home />,
@@ -70,6 +75,10 @@ const router2 = createBrowserRouter([
       {
         path: "/rewards",
         element: <Rewards />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
       },
     ],
   },

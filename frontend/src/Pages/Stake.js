@@ -1,59 +1,35 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { AiFillPlusCircle, AiFillMinusCircle } from "react-icons/ai";
 import { BiMoney } from "react-icons/bi";
 import UserContext from "../Context/context";
-import { getUser, stakeTokens } from "../Routes/user";
+import { useState } from "react";
+import { getUser, stakeTokens, unstakeTokens } from "../Routes/user";
 
 function Stake() {
   const { user } = React.useContext(UserContext);
-  const [stake, setStake] = React.useState(0);
+  const { balance, setBalance } = React.useContext(UserContext);
+  const [stake, setStake] = useState(0);
+  const [roi, setRoi] = useState(0);
+
+  useEffect(() => {
+    getUser(user).then((userData) => {
+      setRoi(userData.stake);
+    });
+  }, []);
 
   const submitHandler = (e) => {
     e.preventDefault();
-    stakeTokens(user, e.target.stakeValue.value).then((res) => {
-      const stakeValue = e.target.stakeValue.value;
-      setStake(parseInt(stakeValue));
+    stakeTokens(user, stake).then((res) => {
+      console.log(res);
+      setRoi(parseInt(stake));
+      setBalance(balance - parseInt(stake));
     });
   };
-
-  React.useEffect(() => {
-    getUser(user).then((res) => {
-      if (res.stake) {
-        setStake(res.stake);
-      } else {
-        setStake(0);
-      }
-    });
-  });
 
   return (
     <>
       <form onSubmit={submitHandler}>
         <div className="bg-white shadow-lg p-4 w-[55em]">
-          <div className="rounded-xl border-2 border-gray-500 px-2 py-3 mb-2">
-            <div className="flex items-center">
-              <div>
-                <div className="text-sm">Stake SuperTokens</div>
-                <div className="font-semibold text-lg">
-                  {/* input */}
-                  <input
-                    type="number"
-                    className="w-40 border"
-                    id="stakeValue"
-                  />
-                </div>
-              </div>
-              <div className="ml-auto">
-                <button
-                  className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full ml-auto"
-                  type="submit"
-                >
-                  Stake
-                </button>
-              </div>
-            </div>
-          </div>
-
           <div className="rounded-xl border-2 border-gray-500 px-2 py-3 bg-gray-500 text-white">
             <div className="flex items-center">
               <div>
@@ -63,11 +39,27 @@ function Stake() {
               <div className="ml-auto flex">
                 {/* plus and minus button */}
                 <div className="pr-2 hover:opacity-70">
-                  <AiFillPlusCircle size={30} />
+                  <AiFillPlusCircle
+                    size={30}
+                    onClick={() => {
+                      setStake(stake + 100 < balance ? stake + 100 : stake);
+                    }}
+                  />
                 </div>
                 <div className="hover:opacity-70">
-                  <AiFillMinusCircle size={30} />
+                  <AiFillMinusCircle
+                    size={30}
+                    onClick={() => {
+                      setStake(stake - 100 > 0 ? stake - 100 : 0);
+                    }}
+                  />
                 </div>
+                <button
+                  className="bg-gray-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full ml-auto gap-10"
+                  type="submit"
+                >
+                  Stake
+                </button>
               </div>
             </div>
           </div>
@@ -75,24 +67,26 @@ function Stake() {
             <div className="text-lg font-bold text-center">Staking Info</div>
             <div className="flex">
               <div className="basis-1/2 rounded-xl border-2 border-black h-20 m-2">
-                <div className="text-center pt-2">APR</div>
+                <div className="text-center pt-2">Profit Calculation</div>
                 <div className="text-center text-green-500 font-bold text-lg">
-                  15%
+                  1 Token Per 100 Staked Tokens Per Day
                 </div>
               </div>
               <div className="basis-1/2 rounded-xl border-2 border-black h-20 m-2">
                 <div className="text-center pt-2">Total Staked</div>
                 <div className="text-center font-bold text-lg">
-                  {stake} SuperTokens
+                  {roi} SuperTokens
                 </div>
               </div>
             </div>
-            <div className="flex">
-              <div className="basis-1/2 rounded-xl border-2 border-black h-20 m-2">
-                <div className="text-center pt-2">Ends In:</div>
-                <div className="text-center text-green-500 font-bold text-lg">
-                  100 Days
-                </div>
+            <div className="flex justify-center">
+              <div className="basis-1/2 rounded-xl border-2 border-black align-center">
+                <button
+                  className="bg-gray-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-xl"
+                  type="submit"
+                >
+                  UnStake
+                </button>
               </div>
               <div className="basis-1/2 rounded-xl border-2 border-black h-20 m-2 flex justify-center items-center bg-black text-white">
                 <div className="text-center font-bold text-lg">
