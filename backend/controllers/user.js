@@ -89,9 +89,9 @@ async function stakeUserTokens(uId, amount) {
   await user.save();
 }
 
-async function unstakeUserTokens(uId, amount) {
+async function unstakeUserTokens(uId) {
   const user = await User.findById(uId);
-  user.stake -= amount;
+  user.stake = 0;
   await unstakeTokens(user.address);
   await user.save();
 }

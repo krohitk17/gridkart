@@ -5,7 +5,7 @@ import { getUserBalance, getContractBalance } from "../Routes/user";
 
 const UserContextProvider = ({ children }) => {
   const [globalVariable, setGlobalVariable] = useState("user");
-  const [user, setUser] = useState("64e244f56b0c0a7bb062fe90");
+  const [user, setUser] = useState("64e245016b0c0a7bb062fe94");
   const [balance, setBalance] = useState(0);
 
   useEffect(() => {

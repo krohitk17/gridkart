@@ -115,9 +115,9 @@ app.post("/users/stake", async (req, res) => {
   await userController.stakeUserTokens(uId, amount);
 });
 
-app.get("/users/unstake", async (req, res) => {
+app.post("/users/unstake", async (req, res) => {
   const uId = req.query.id;
-  await unstakeTokens(uId);
+  await userController.unstakeUserTokens(uId);
 });
 
 app.get("/transactions", async (req, res) => {

@@ -50,6 +50,19 @@ function Earn() {
   return (
     <>
       <div className="bg-white shadow-lg p-4 min-w-[55em]">
+        <div className="pt-2 flex-row">
+          {tasks.map((task) => {
+            console.log(task);
+            return (
+              <Task
+                key={task._id}
+                description={task.description}
+                amount={task.amount}
+                onClick={() => onClick(task)}
+              />
+            );
+          })}
+        </div>
         <div className="font-bold text-lg py-2">Referral</div>
         <div className="bg-gray-100 rounded-lg h-30 w-full p-4 mb-2 font-semibold">
           <p className="pb-4 text-lg">Invite friends and get SuperTokens!</p>
@@ -102,19 +115,6 @@ function Earn() {
               </div>
             </div>
           </div>
-        </div>
-        <div className="pt-2 flex-row">
-          {tasks.map((task) => {
-            console.log(task);
-            return (
-              <Task
-                key={task._id}
-                description={task.description}
-                amount={task.amount}
-                onClick={() => onClick(task)}
-              />
-            );
-          })}
         </div>
       </div>
     </>
