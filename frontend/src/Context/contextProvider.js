@@ -4,13 +4,14 @@ import UserContext from "./context";
 import { getUserBalance, getContractBalance } from "../Routes/user";
 
 const UserContextProvider = ({ children }) => {
-  const [globalVariable, setGlobalVariable] = useState("user");
-  const [user, setUser] = useState("64e245016b0c0a7bb062fe94");
+  const [globalVariable, setGlobalVariable] = useState("admin");
+  const [user, setUser] = useState("64e244fb6b0c0a7bb062fe92");
   const [balance, setBalance] = useState(0);
 
   useEffect(() => {
     console.log(user);
-    if (globalVariable === "user") {
+    if (globalVariable === "user" || globalVariable === "login") {
+      console.log("herel");
       getUserBalance(user).then((balance) => {
         setBalance(balance);
       });

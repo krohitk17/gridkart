@@ -105,7 +105,12 @@ app.post("/tasks", async (req, res) => {
 
 app.post("/rewards", async (req, res) => {
   const reward = req.body;
-  await eventController.create("reward", reward);
+  await eventController.create(
+    "reward",
+    reward.description,
+    reward.amount,
+    reward.image
+  );
 });
 
 app.post("/users/stake", async (req, res) => {

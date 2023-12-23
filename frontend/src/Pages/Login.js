@@ -13,7 +13,9 @@ function Login() {
   const { setGlobalVariable } = useContext(MyContext);
 
   const handleClick = () => {
-    setGlobalVariable("user");
+    setTimeout(() => {
+      setGlobalVariable("user");
+    }, 1000);
   };
 
   return (
@@ -28,7 +30,7 @@ function Login() {
           </div>
           <div className={formItemsStyle}>
             <InputGroup size="md">
-              <Input placeholder="Enter password" />
+              <Input placeholder="Enter password" type="password" />
               <InputRightElement>
                 <Button h="1.75rem" size="sm">
                   <BiHide />

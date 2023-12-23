@@ -46,17 +46,19 @@ function Rewards() {
     event.preventDefault();
     console.log(name, cost, img);
 
-    createReward({ description: name, amount: cost, image: img }).then(
-      (reward) => {
-        console.log(reward);
-        setRewards([...rewards, reward]);
-        // enter code here
-        setImg("");
-        setName("");
-        setCost("");
-        onClose();
-      }
-    );
+    createReward({
+      description: name,
+      amount: Number(cost),
+      image: img,
+    }).then((reward) => {
+      console.log(reward);
+      setRewards([...rewards, reward]);
+      // enter code here
+      setImg("");
+      setName("");
+      setCost("");
+      onClose();
+    });
   };
 
   return (

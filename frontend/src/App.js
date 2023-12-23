@@ -83,11 +83,20 @@ const router2 = createBrowserRouter([
     ],
   },
 ]);
+const router3 = createBrowserRouter([
+  {
+    path: "/",
+    element: <Login />,
+    errorElement: <div>404</div>,
+  },
+]);
 
 function App() {
   const { globalVariable } = useContext(MyContext);
   if (globalVariable === "user") {
     return <RouterProvider router={router1} />;
+  } else if (globalVariable === "login") {
+    return <RouterProvider router={router3} />;
   } else {
     return <RouterProvider router={router2} />;
   }

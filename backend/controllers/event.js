@@ -4,6 +4,7 @@ const { createReward } = require("../web3/rewards.js");
 const { createTask } = require("../web3/tasks.js");
 
 async function create(type, description, amount, image) {
+  console.log(type, description, amount, image);
   const event = new Event({
     type,
     description,
